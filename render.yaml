@@ -1,0 +1,104 @@
+services:
+  # ---------------------------------------------------------------------------
+  # Main Django Web Service
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: studentverse-backend
+    runtime: python
+    region: singapore  # Change to: oregon, frankfurt, ohio, singapore, virginia
+    plan: free         # Change to: starter, standard, pro for production
+    branch: main
+
+    buildCommand: "./build.sh"
+
+    # Daphne ASGI server — handles both HTTP and WebSocket
+    startCommand: "cd src && daphne -b 0.0.0.0 -p $PORT config.asgi:application"
+
+    autoDeploy: true
+
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: DJANGO_ENVIRONMENT
+        value: production
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true     # Render auto-generates a secure random value
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "false"          # Render handles HTTPS termination
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      # The following vars must be set manually in the Render Dashboard:
+      # DATABASE_URL        — from your Render PostgreSQL service
+      # REDIS_URL           — from your Render Redis service
+      # CELERY_BROKER_URL   — same as REDIS_URL
+      # CELERY_RESULT_BACKEND — same as REDIS_URL
+      # DJANGO_ALLOWED_HOSTS — your-app.onrender.com
+      # CORS_ALLOWED_ORIGINS — https://your-frontend.vercel.app
+      # CSRF_TRUSTED_ORIGINS — https://your-app.onrender.com
+      # SUPABASE_URL
+      # SUPABASE_KEY
+      # SUPABASE_STORAGE_BUCKET
+      # FIREBASE_CREDENTIALS_PATH — /etc/secrets/firebase.json (Secret File)
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker (Background Jobs)
+  # ---------------------------------------------------------------------------
+  - type: worker
+    name: studentverse-worker
+    runtime: python
+    plan: free
+    branch: main
+
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "cd src && celery -A config worker -l info --concurrency 2"
+
+    autoDeploy: true
+
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: DJANGO_ENVIRONMENT
+        value: production
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "false"
+
+  # ---------------------------------------------------------------------------
+  # Celery Beat (Scheduled Tasks)
+  # ---------------------------------------------------------------------------
+  - type: worker
+    name: studentverse-beat
+    runtime: python
+    plan: free
+    branch: main
+
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "cd src && celery -A config beat -l info"
+
+    autoDeploy: true
+
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: DJANGO_ENVIRONMENT
+        value: production
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "false"
+
+databases:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — Free tier (expires after 90 days on free plan)
+  # ---------------------------------------------------------------------------
+  - name: studentverse-db
+    plan: free
+    region: singapore   # Must match your web service region
+    databaseName: studentverse
+    user: svuser
+
+# Redis is configured as an external service — add it manually in the dashboard
+# or use the Render Redis addon (not supported in render.yaml for free tier)
