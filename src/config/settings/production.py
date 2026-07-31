@@ -40,18 +40,27 @@ SECURE_SSL_REDIRECT = parse_bool_env("DJANGO_SECURE_SSL_REDIRECT", False)
 # ---------------------------------------------------------------------------
 # Production Cache — Redis (overrides base.py CACHES)
 # ---------------------------------------------------------------------------
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": os.getenv("REDIS_URL", "redis://redis:6379/1"),
-        "KEY_PREFIX": "sv_prod",
-        "TIMEOUT": 300,
-        "OPTIONS": {
-            "socket_connect_timeout": 5,
-            "socket_timeout": 5,
-        },
+redis_url = os.getenv("REDIS_URL", "")
+if redis_url:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": redis_url,
+            "KEY_PREFIX": "sv_prod",
+            "TIMEOUT": 300,
+            "OPTIONS": {
+                "socket_connect_timeout": 5,
+                "socket_timeout": 5,
+            },
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "sv-prod-fallback",
+        }
+    }
 
 # ---------------------------------------------------------------------------
 # Email — SMTP (configure via environment variables)
