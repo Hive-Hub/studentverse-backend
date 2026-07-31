@@ -13,3 +13,12 @@ media/
 htmlcov/
 *.egg-info/
 .mypy_cache/
+
+# Firebase service account credentials — NEVER commit these
+*firebase-adminsdk*.json
+*-credentials.json
+*-service-account.json
+
+# Secrets
+*.pem
+*.key
