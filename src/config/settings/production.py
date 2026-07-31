@@ -125,14 +125,20 @@ if _sentry_dsn:
     )
 
 # ---------------------------------------------------------------------------
-# Production Logging — add file handler rotation
+# Production Logging — rotating file handler (safe for Render / Docker)
 # ---------------------------------------------------------------------------
+import pathlib
+
+_log_dir = pathlib.Path(BASE_DIR) / "logs"
+_log_dir.mkdir(parents=True, exist_ok=True)  # create logs/ if it doesn't exist
+
 LOGGING["handlers"]["file"] = {  # type: ignore[index]
     "class": "logging.handlers.RotatingFileHandler",
-    "filename": BASE_DIR / "logs" / "django.log",
+    "filename": str(_log_dir / "django.log"),
     "maxBytes": 1024 * 1024 * 10,  # 10 MB
     "backupCount": 5,
     "formatter": "verbose",
+    "delay": True,  # don't open the file until the first log message
 }
 LOGGING["root"]["handlers"].append("file")  # type: ignore[index]
 LOGGING["loggers"]["django"]["handlers"].append("file")  # type: ignore[index]
