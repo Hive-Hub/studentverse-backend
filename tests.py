@@ -1,0 +1,9 @@
+from apps.health.tests import *  # noqa: F401,F403
+from apps.logs.tests import *  # noqa: F401,F403
+from apps.accounts.tests import *  # noqa: F401,F403
+from apps.news.tests import *  # noqa: F401,F403
+from apps.events.tests import *  # noqa: F401,F403
+from apps.notifications.tests import *  # noqa: F401,F403
+from apps.search.tests import *  # noqa: F401,F403
+from apps.messaging.tests import *  # noqa: F401,F403
+from apps.messaging.tests_ws import *  # noqa: F401,F403

@@ -1,0 +1,2365 @@
+StudentVerse Backend API Documentation
+
+Base URL:
+- Development: https://solely-together-cricket.ngrok-free.app
+
+Firebase Test Credentials:
+- Project ID: nothingtobedone-b1c91
+- Web API Key: AIzaSyB0rA9E-rkNzswWiTw7xFcp8-k8mHKQC5E
+- Demo User Email: Demo@gmail.com
+- Demo User Password: Demo1234
+
+Common Response Envelope:
+- Success: {"success": true, "message": "...", "data": {...}}
+- Error: {"success": false, "message": "...", "errors": {...}}
+
+-------------------------------------------------------------------------------
+1) Health Check
+-------------------------------------------------------------------------------
+- URL: /health/
+- HTTP Method: GET
+- Authentication: None
+- Headers:
+  - Accept: application/json
+- Parameters: None
+- Request Body: None
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Service is healthy",
+    "data": {
+      "service": "StudentVerse Backend",
+      "status": "ok",
+      "environment": "development",
+      "version": "0.1.0",
+      "checked_at": "2026-07-29T00:00:00Z",
+      "database": {
+        "connected": true
+      }
+    }
+  }
+- Error Response (503 Service Unavailable):
+  {
+    "success": false,
+    "message": "Service is unhealthy",
+    "errors": {
+      "database": "Database connection failed"
+    }
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/health/ -H "Accept: application/json"
+
+-------------------------------------------------------------------------------
+2) API Version
+-------------------------------------------------------------------------------
+- URL: /api/v1/version/
+- HTTP Method: GET
+- Authentication: None
+- Headers:
+  - Accept: application/json
+- Parameters: None
+- Request Body: None
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "API version retrieved successfully",
+    "data": {
+      "service": "StudentVerse Backend",
+      "environment": "development",
+      "version": "0.1.0",
+      "django": "5.x"
+    }
+  }
+- Error Response (500 Internal Server Error):
+  {
+    "success": false,
+    "message": "An unexpected error occurred",
+    "errors": {
+      "detail": "Server error"
+    }
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/version/ -H "Accept: application/json"
+
+-------------------------------------------------------------------------------
+3) Firebase Login
+-------------------------------------------------------------------------------
+- URL: /api/v1/auth/firebase/login/
+- HTTP Method: POST
+- Authentication: None (or Bearer token passed in the Authorization header)
+- Headers:
+  - Content-Type: application/json
+  - Accept: application/json
+- Parameters: None
+- Request Body:
+  {
+    "firebase_id_token": "YOUR_FIREBASE_ID_TOKEN"
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Firebase login successful",
+    "data": {
+      "access": "eyJhbGciOi...",
+      "refresh": "eyJhbGciOi...",
+      "user": {
+        "id": 1,
+        "username": "student_handle",
+        "email": "student@example.com",
+        "first_name": "Student",
+        "last_name": "Verse",
+        "display_name": "Student Verse",
+        "firebase_uid": "firebase-uid-123",
+        "role": "student",
+        "is_active": true,
+        "date_joined": "2026-07-29T00:00:00Z",
+        "created_at": "2026-07-29T00:00:00Z",
+        "updated_at": "2026-07-29T00:00:00Z"
+      }
+    }
+  }
+- Error Response (400 Bad Request):
+  {
+    "success": false,
+    "message": "Invalid Firebase ID token.",
+    "errors": {
+      "firebase_id_token": ["This field is required."]
+    }
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/auth/firebase/login/ \
+    -H "Content-Type: application/json" \
+    -d '{"firebase_id_token": "valid_token"}'
+
+-------------------------------------------------------------------------------
+4) JWT Token Refresh
+-------------------------------------------------------------------------------
+- URL: /api/v1/auth/refresh/
+- HTTP Method: POST
+- Authentication: None
+- Headers:
+  - Content-Type: application/json
+- Parameters: None
+- Request Body:
+  {
+    "refresh": "YOUR_REFRESH_TOKEN"
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "JWT refreshed successfully",
+    "data": {
+      "access": "eyJhbGciOi..."
+    }
+  }
+- Error Response (400 Bad Request):
+  {
+    "success": false,
+    "message": "Invalid or expired refresh token.",
+    "errors": {
+      "refresh": "Token is invalid or expired"
+    }
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/auth/refresh/ \
+    -H "Content-Type: application/json" \
+    -d '{"refresh": "refresh_token"}'
+
+-------------------------------------------------------------------------------
+5) Logout
+-------------------------------------------------------------------------------
+- URL: /api/v1/auth/logout/
+- HTTP Method: POST
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json
+- Parameters: None
+- Request Body:
+  {
+    "refresh": "YOUR_REFRESH_TOKEN"
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Logout successful",
+    "data": {
+      "logged_out": true
+    }
+  }
+- Error Response (400 Bad Request):
+  {
+    "success": false,
+    "message": "Invalid or expired refresh token.",
+    "errors": {
+      "refresh": "Invalid or expired refresh token."
+    }
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/auth/logout/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"refresh": "refresh_token"}'
+
+-------------------------------------------------------------------------------
+6) Current User Information
+-------------------------------------------------------------------------------
+- URL: /api/v1/auth/me/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Parameters: None
+- Request Body: None
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Current user retrieved successfully",
+    "data": {
+      "id": 1,
+      "username": "firebase-uid-123",
+      "email": "student@example.com",
+      "first_name": "Student",
+      "last_name": "Verse",
+      "role": "student",
+      "display_name": "Student Verse",
+      "firebase_uid": "firebase-uid-123"
+    }
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/auth/me/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+7) Current User Profile View & Update
+-------------------------------------------------------------------------------
+- URL: /api/v1/auth/profile/
+- HTTP Method: GET / PATCH
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json (or multipart/form-data for image uploads)
+- Parameters: None
+- Request Body (for PATCH - all fields optional):
+  {
+    "username": "cyber_knight",
+    "full_name": "Arthur Pendragon",
+    "bio": "Defending cyberspace...",
+    "college": "Camelot University",
+    "branch": "Computer Science",
+    "year": 3,
+    "skills": ["Python", "Cryptography"],
+    "interests": ["Cybersecurity", "Blockchain"],
+    "github": "https://github.com/arthur",
+    "linkedin": "https://linkedin.com/in/arthur",
+    "portfolio": "https://arthur.dev",
+    "location": "England, UK",
+    "achievements": ["CTF Winner 2026"]
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Profile retrieved successfully" / "Profile updated successfully",
+    "data": {
+      "id": 1,
+      "username_system": "firebase-uid-123",
+      "email": "student@example.com",
+      "first_name": "Arthur",
+      "last_name": "Pendragon",
+      "display_name": "Student Verse",
+      "firebase_uid": "firebase-uid-123",
+      "role": "student",
+      "profile_photo": "https://solely-together-cricket.ngrok-free.app/media/profiles/avatar.png",
+      "full_name": "Arthur Pendragon",
+      "username": "cyber_knight",
+      "bio": "Defending cyberspace...",
+      "college": "Camelot University",
+      "branch": "Computer Science",
+      "year": 3,
+      "skills": ["Python", "Cryptography"],
+      "interests": ["Cybersecurity", "Blockchain"],
+      "github": "https://github.com/arthur",
+      "linkedin": "https://linkedin.com/in/arthur",
+      "portfolio": "https://arthur.dev",
+      "location": "England, UK",
+      "achievements": ["CTF Winner 2026"],
+      "is_active": true,
+      "date_joined": "2026-07-29T00:00:00Z",
+      "created_at": "2026-07-29T00:00:00Z",
+      "updated_at": "2026-07-29T00:00:00Z"
+    }
+  }
+- Error Response (400 Bad Request):
+  {
+    "success": false,
+    "message": "Invalid input data",
+    "errors": {
+      "username": ["Username handle must be between 3 and 30 characters."],
+      "year": ["Year must be an integer between 1 and 5."],
+      "github": ["URL must belong to domain: github.com"]
+    }
+  }
+- Example Request:
+  curl -X PATCH https://solely-together-cricket.ngrok-free.app/api/v1/auth/profile/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"username": "cyber_knight", "year": 3}'
+
+-------------------------------------------------------------------------------
+8) Search, Filter, Paginate Profiles (Public List)
+-------------------------------------------------------------------------------
+- URL: /api/v1/profiles/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Parameters (Query Parameters):
+  - `page`: Page number (default: 1)
+  - `page_size`: Profiles per page (default: 10, max: 100)
+  - `college`: Filter by college name (case-insensitive)
+  - `branch`: Filter by branch name (case-insensitive)
+  - `year`: Filter by year (1 to 5)
+  - `skills`: Filter by skills (comma-separated list, e.g. `python,django`)
+  - `interests`: Filter by interests (comma-separated list, e.g. `ai,reading`)
+  - `search`: General search string checking: username handle, full_name, bio, location, skills, interests
+- Request Body: None
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Profiles retrieved successfully",
+    "data": {
+      "results": [
+        {
+          "id": 1,
+          "username": "cyber_knight",
+          "full_name": "Arthur Pendragon",
+          "college": "Camelot University",
+          "branch": "Computer Science",
+          "year": 3,
+          "skills": ["Python", "Cryptography"],
+          "interests": ["Cybersecurity", "Blockchain"],
+          "profile_photo": "https://solely-together-cricket.ngrok-free.app/media/profiles/avatar.png",
+          "location": "England, UK"
+        }
+      ],
+      "count": 1,
+      "next": null,
+      "previous": null
+    }
+  }
+- Example Request:
+  curl -X GET "https://solely-together-cricket.ngrok-free.app/api/v1/profiles/?college=Camelot+University&skills=python&search=Arthur" \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+9) Retrieve Profile by Username Handle
+-------------------------------------------------------------------------------
+- URL: /api/v1/profiles/<username>/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Parameters: None
+- Request Body: None
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Profile retrieved successfully",
+    "data": {
+      "id": 1,
+      "username_system": "firebase-uid-123",
+      "email": "student@example.com",
+      "first_name": "Arthur",
+      "last_name": "Pendragon",
+      "display_name": "Student Verse",
+      "firebase_uid": "firebase-uid-123",
+      "role": "student",
+      "profile_photo": "https://solely-together-cricket.ngrok-free.app/media/profiles/avatar.png",
+      "full_name": "Arthur Pendragon",
+      "username": "cyber_knight",
+      "bio": "Defending cyberspace...",
+      "college": "Camelot University",
+      "branch": "Computer Science",
+      "year": 3,
+      "skills": ["Python", "Cryptography"],
+      "interests": ["Cybersecurity", "Blockchain"],
+      "github": "https://github.com/arthur",
+      "linkedin": "https://linkedin.com/in/arthur",
+      "portfolio": "https://arthur.dev",
+      "location": "England, UK",
+      "achievements": ["CTF Winner 2026"],
+      "is_active": true,
+      "date_joined": "2026-07-29T00:00:00Z",
+      "created_at": "2026-07-29T00:00:00Z",
+      "updated_at": "2026-07-29T00:00:00Z"
+    }
+  }
+- Error Response (404 Not Found):
+  {
+    "success": false,
+    "message": "No UserProfile matches the given query."
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/profiles/cyber_knight/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+10) Update Profile by Username Handle
+-------------------------------------------------------------------------------
+- URL: /api/v1/profiles/<username>/
+- HTTP Method: PATCH / PUT
+- Authentication: JWT (Bearer <access_token>, must own profile or be Admin)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json
+- Parameters: None
+- Request Body: (Same as auth/profile PATCH fields)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Profile updated successfully",
+    "data": { ... }
+  }
+- Error Response (403 Forbidden):
+  {
+    "success": false,
+    "message": "You do not have permission to perform this action."
+  }
+- Example Request:
+  curl -X PATCH https://solely-together-cricket.ngrok-free.app/api/v1/profiles/cyber_knight/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"bio": "Hack the Planet."}'
+
+-------------------------------------------------------------------------------
+11) Delete Profile by Username Handle
+-------------------------------------------------------------------------------
+- URL: /api/v1/profiles/<username>/
+- HTTP Method: DELETE
+- Authentication: JWT (Bearer <access_token>, must own profile or be Admin)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Parameters: None
+- Request Body: None
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Profile deleted successfully",
+    "data": {
+      "deleted": true
+    }
+  }
+- Error Response (403 Forbidden):
+  {
+    "success": false,
+    "message": "You do not have permission to perform this action."
+  }
+- Example Request:
+  curl -X DELETE https://solely-together-cricket.ngrok-free.app/api/v1/profiles/cyber_knight/ \
+    -H "Authorization: Bearer <access_token>"
+
+===============================================================================
+PHASE 3: COMMUNITY SYSTEM
+===============================================================================
+
+-------------------------------------------------------------------------------
+12) Create Community
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/
+- HTTP Method: POST
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: multipart/form-data (if uploading banner/icon) or application/json
+- Parameters: None
+- Request Body:
+  {
+    "name": "Web Devs",
+    "description": "Building the future of web",
+    "is_public": true,
+    "rules": ["Be kind", "Keep clean"]
+  }
+- Success Response (201 Created):
+  {
+    "success": true,
+    "message": "Community created successfully.",
+    "data": {
+      "id": 5,
+      "name": "Web Devs",
+      "slug": "web-devs",
+      "description": "Building the future of web",
+      "banner": null,
+      "icon": null,
+      "invite_code": "X9F8D2S1",
+      "is_public": true,
+      "rules": ["Be kind", "Keep clean"],
+      "created_at": "2026-07-29T07:24:20Z",
+      "updated_at": "2026-07-29T07:24:20Z",
+      "members_count": 1,
+      "admins_count": 0,
+      "moderators_count": 0,
+      "is_member": true,
+      "user_role": "owner"
+    }
+  }
+- Error Response (400 Bad Request):
+  {
+    "success": false,
+    "message": "Invalid data provided",
+    "errors": {
+      "name": ["Community with this name already exists."]
+    }
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/communities/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"name": "Web Devs", "is_public": true}'
+
+-------------------------------------------------------------------------------
+13) List Communities
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Parameters:
+  - search: Search text for name/description (optional)
+  - is_public: Filter by public/private communities (optional, e.g. ?is_public=true)
+  - page: Page number (optional)
+  - page_size: Size of page (optional)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Communities list retrieved successfully.",
+    "data": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": 5,
+          "name": "Web Devs",
+          "slug": "web-devs",
+          "description": "Building the future of web",
+          "banner": null,
+          "icon": null,
+          "invite_code": "X9F8D2S1",
+          "is_public": true,
+          "rules": ["Be kind", "Keep clean"],
+          "created_at": "2026-07-29T07:24:20Z",
+          "updated_at": "2026-07-29T07:24:20Z",
+          "members_count": 1,
+          "admins_count": 0,
+          "moderators_count": 0,
+          "is_member": true,
+          "user_role": "owner"
+        }
+      ]
+    }
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/communities/?search=Web \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+14) Retrieve Community by Slug
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Community details retrieved successfully.",
+    "data": { ... }
+  }
+- Error Response (403 Forbidden):
+  {
+    "success": false,
+    "message": "Access denied. This is a private community."
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+15) Update Community by Slug
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/
+- HTTP Method: PATCH / PUT
+- Authentication: JWT (Bearer <access_token>, must be Owner or Admin)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json
+- Request Body: (Fields to update, e.g. description, banner, rules, is_public)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Community updated successfully.",
+    "data": { ... }
+  }
+- Example Request:
+  curl -X PATCH https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"description": "New hacker community description"}'
+
+-------------------------------------------------------------------------------
+16) Delete Community
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/
+- HTTP Method: DELETE
+- Authentication: JWT (Bearer <access_token>, must be Owner)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Community deleted successfully."
+  }
+- Example Request:
+  curl -X DELETE https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+17) Join Community
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/join/
+- HTTP Method: POST
+- Authentication: JWT (Bearer <access_token>)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json
+- Request Body (required for private communities):
+  {
+    "invite_code": "X9F8D2S1"
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Successfully joined Web Devs!",
+    "data": {
+      "id": 18,
+      "user": { ... },
+      "role": "member",
+      "joined_at": "2026-07-29T07:33:00Z"
+    }
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/join/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"invite_code": "X9F8D2S1"}'
+
+-------------------------------------------------------------------------------
+18) Leave Community
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/leave/
+- HTTP Method: POST
+- Authentication: JWT (Bearer <access_token>, must be a member, owner excluded)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "You have successfully left Web Devs."
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/leave/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+19) Reset Invite Code
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/invite/reset/
+- HTTP Method: POST
+- Authentication: JWT (Bearer <access_token>, must be Owner or Admin)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Community invite code regenerated successfully.",
+    "data": {
+      "invite_code": "NEW_CODE_123"
+    }
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/invite/reset/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+20) View Community Statistics
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/statistics/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>, must be a member)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Community statistics retrieved successfully.",
+    "data": {
+      "members_count": 4,
+      "role_distribution": {
+        "owner": 1,
+        "admin": 1,
+        "moderator": 1,
+        "member": 1
+      },
+      "joined_last_7_days": 4
+    }
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/statistics/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+21) List Community Members
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/members/
+- HTTP Method: GET
+- Authentication: JWT (Bearer <access_token>, must be a member)
+- Headers:
+  - Authorization: Bearer <access_token>
+- Parameters:
+  - role: Filter members by role choice (optional, e.g. ?role=admin)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Community members list retrieved successfully.",
+    "data": [
+      {
+        "id": 1,
+        "user": {
+          "id": 1,
+          "username": "cyber_knight",
+          "email": "cyber@example.com",
+          "first_name": "Arthur",
+          "last_name": "Pendragon",
+          "display_name": "Arthur",
+          "profile_photo": null
+        },
+        "role": "owner",
+        "joined_at": "2026-07-29T07:24:20Z"
+      }
+    ]
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/members/ \
+    -H "Authorization: Bearer <access_token>"
+
+-------------------------------------------------------------------------------
+22) Update Member Role (Promote / Demote)
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/members/<member_id>/
+- HTTP Method: PATCH
+- Authentication: JWT (Bearer <access_token>, must be Owner or Admin)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json
+- Request Body:
+  {
+    "role": "admin"
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Member role updated successfully.",
+    "data": {
+      "id": 3,
+      "user": { ... },
+      "role": "admin",
+      "joined_at": "2026-07-29T07:24:20Z"
+    }
+  }
+- Example Request:
+  curl -X PATCH https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/members/3/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"role": "admin"}'
+
+-------------------------------------------------------------------------------
+23) Transfer Ownership
+-------------------------------------------------------------------------------
+- URL: /api/v1/communities/<slug>/transfer-ownership/
+- HTTP Method: POST
+- Authentication: JWT (Bearer <access_token>, must be Owner)
+- Headers:
+  - Authorization: Bearer <access_token>
+  - Content-Type: application/json
+- Request Body:
+  {
+    "target_user_id": 12
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Ownership of Web Devs successfully transferred to user id 12."
+  }
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/communities/web-devs/transfer-ownership/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"target_user_id": 12}'
+
+
+================================================================================
+PHASE 4 — CHANNELS
+================================================================================
+
+All channel endpoints require a valid JWT in the Authorization header.
+Base URL: https://solely-together-cricket.ngrok-free.app/api/v1/channels/
+
+Channel Types: announcements | general | projects | resources | events | doubts | random
+Permission Types: read_only | write | moderator_only
+
+--------------------------------------------------------------------------------
+1. LIST CHANNELS
+--------------------------------------------------------------------------------
+GET /api/v1/channels/
+- Description: List all channels visible to the authenticated user. Members
+  cannot see moderator_only channels. Non-members see no channels.
+- Auth: Bearer Token (required)
+- Query Parameters (all optional):
+  - community=<slug>          Filter by community slug
+  - channel_type=<type>       Filter by channel type
+  - is_pinned=true|false      Filter pinned/unpinned channels
+  - is_archived=true|false    Filter archived/active channels
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Channels list retrieved successfully.",
+    "data": [
+      {
+        "id": 1,
+        "community": "web-devs",
+        "name": "announcements",
+        "slug": "announcements",
+        "description": "Official announcements",
+        "channel_type": "announcements",
+        "permission_type": "read_only",
+        "is_pinned": true,
+        "is_archived": false,
+        "order": 1,
+        "can_write": false,
+        "created_at": "2026-07-29T08:00:00Z"
+      }
+    ]
+  }
+- Example Request:
+  curl -X GET "https://solely-together-cricket.ngrok-free.app/api/v1/channels/?community=web-devs" \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+2. CREATE CHANNEL
+--------------------------------------------------------------------------------
+POST /api/v1/channels/
+- Description: Create a new channel inside a community.
+  Only community Owners and Admins can create channels.
+- Auth: Bearer Token (required)
+- Request Body:
+  {
+    "community": "web-devs",
+    "name": "general",
+    "description": "General discussion",
+    "channel_type": "general",
+    "permission_type": "write",
+    "is_pinned": false,
+    "order": 2
+  }
+- Required Fields: community, name, channel_type
+- Success Response (201 Created):
+  {
+    "success": true,
+    "message": "Channel created successfully.",
+    "data": {
+      "id": 5,
+      "community": "web-devs",
+      "name": "general",
+      "slug": "general",
+      "description": "General discussion",
+      "channel_type": "general",
+      "permission_type": "write",
+      "is_pinned": false,
+      "is_archived": false,
+      "order": 2,
+      "can_write": true,
+      "created_at": "2026-07-29T08:10:00Z"
+    }
+  }
+- Error Responses:
+  - 400 Bad Request: Invalid name (must be lowercase, alphanumeric, hyphens/underscores only, 2-100 chars)
+  - 403 Forbidden: User is not an Owner or Admin of the community
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/channels/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"community": "web-devs", "name": "general", "channel_type": "general", "permission_type": "write"}'
+
+--------------------------------------------------------------------------------
+3. RETRIEVE CHANNEL
+--------------------------------------------------------------------------------
+GET /api/v1/channels/<id>/
+- Description: Retrieve a single channel's details.
+  Members cannot access moderator_only channels.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Channel details retrieved successfully.",
+    "data": {
+      "id": 5,
+      "community": "web-devs",
+      "name": "general",
+      "slug": "general",
+      "description": "General discussion",
+      "channel_type": "general",
+      "permission_type": "write",
+      "is_pinned": false,
+      "is_archived": false,
+      "order": 2,
+      "can_write": true,
+      "created_at": "2026-07-29T08:10:00Z"
+    }
+  }
+- Error Responses:
+  - 403 Forbidden: Member trying to access a moderator_only channel
+  - 404 Not Found: Channel does not exist
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/channels/5/ \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+4. UPDATE CHANNEL
+--------------------------------------------------------------------------------
+PATCH /api/v1/channels/<id>/
+- Description: Partially update channel settings.
+  Only community Owners and Admins can update channels.
+- Auth: Bearer Token (required)
+- Request Body (all fields optional):
+  {
+    "name": "general-chat",
+    "description": "Casual conversations",
+    "channel_type": "general",
+    "permission_type": "write",
+    "is_pinned": true,
+    "is_archived": false,
+    "order": 1
+  }
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Channel updated successfully.",
+    "data": {
+      "id": 5,
+      "community": "web-devs",
+      "name": "general-chat",
+      "slug": "general-chat",
+      ...
+    }
+  }
+- Error Responses:
+  - 400 Bad Request: Validation error (invalid name format, etc.)
+  - 403 Forbidden: User is not an Owner or Admin of the community
+- Example Request:
+  curl -X PATCH https://solely-together-cricket.ngrok-free.app/api/v1/channels/5/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"name": "general-chat", "is_pinned": true}'
+
+--------------------------------------------------------------------------------
+5. DELETE CHANNEL
+--------------------------------------------------------------------------------
+DELETE /api/v1/channels/<id>/
+- Description: Permanently delete a channel from a community.
+  Only community Owners and Admins can delete channels.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Channel deleted successfully."
+  }
+- Error Responses:
+  - 403 Forbidden: User is not an Owner or Admin of the community
+  - 404 Not Found: Channel does not exist
+- Example Request:
+  curl -X DELETE https://solely-together-cricket.ngrok-free.app/api/v1/channels/5/ \
+    -H "Authorization: Bearer <access_token>"
+
+
+================================================================================
+PHASE 5 — GROUP CHAT (CHANNEL MESSAGES)
+================================================================================
+
+All messaging endpoints require a valid JWT in the Authorization header.
+No direct messages — all messages belong to community channels.
+
+Base URL: https://solely-together-cricket.ngrok-free.app/api/v1/
+
+Realtime Note: These REST endpoints support full polling. WebSocket (Django Channels)
+integration can be added later without any model or API changes.
+
+--------------------------------------------------------------------------------
+1. LIST MESSAGES
+--------------------------------------------------------------------------------
+GET /api/v1/channels/<channel_id>/messages/
+- Description: List all top-level messages in a channel (paginated, cursor-based).
+  Only community members can read messages. Non-members receive 403.
+- Auth: Bearer Token (required)
+- Query Parameters (all optional):
+  - search=<text>              Full-text search in message content
+  - pinned_only=true           Return only pinned messages
+  - before=<ISO datetime>      Cursor: return messages before this timestamp
+  - limit=<int>                Number of messages to return (default 50, max 100)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Messages retrieved successfully.",
+    "data": [
+      {
+        "id": 1,
+        "channel": 3,
+        "author": { "id": 5, "username": "alice", "display_name": "Alice" },
+        "content": "Hello everyone!",
+        "parent_id": null,
+        "gif_url": "",
+        "mention_ids": [],
+        "attachments": [],
+        "reactions": [{ "emoji": "👍", "count": 2, "reacted_by_me": true }],
+        "reply_count": 3,
+        "is_pinned": false,
+        "is_edited": false,
+        "edited_at": null,
+        "can_edit": true,
+        "can_delete": true,
+        "created_at": "2026-07-29T08:00:00Z",
+        "updated_at": "2026-07-29T08:00:00Z"
+      }
+    ],
+    "meta": { "count": 50, "limit": 50 }
+  }
+- Example Request:
+  curl -X GET "https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/?limit=20" \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+2. SEND MESSAGE
+--------------------------------------------------------------------------------
+POST /api/v1/channels/<channel_id>/messages/
+- Description: Send a message to a channel.
+  Members cannot send to read_only channels (403).
+  Mentions (@username) are automatically parsed and stored.
+- Auth: Bearer Token (required)
+- Request Body:
+  {
+    "content": "Hey @bob, check this out!",
+    "parent_id": null,
+    "gif_url": ""
+  }
+- Required: At least one of content or gif_url must be non-empty.
+- Success Response (201 Created):
+  {
+    "success": true,
+    "message": "Message sent.",
+    "data": { ...full message object... }
+  }
+- Error Responses:
+  - 400 Bad Request: content and gif_url both empty
+  - 403 Forbidden: Not a community member, or channel is read_only
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"content": "Hello world!"}'
+
+--------------------------------------------------------------------------------
+3. GET MESSAGE
+--------------------------------------------------------------------------------
+GET /api/v1/channels/<channel_id>/messages/<message_id>/
+- Description: Retrieve a single message with full details including reactions,
+  attachments, reply_count, can_edit, can_delete flags.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Message retrieved.", "data": { ...message... } }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/ \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+4. EDIT MESSAGE
+--------------------------------------------------------------------------------
+PATCH /api/v1/channels/<channel_id>/messages/<message_id>/
+- Description: Edit the content of a message. Only the message author can edit.
+  Sets is_edited=true and edited_at timestamp. Mentions are re-parsed.
+- Auth: Bearer Token (required)
+- Request Body:
+  { "content": "Updated message content" }
+- Success Response (200 OK):
+  { "success": true, "message": "Message updated.", "data": { ...message... } }
+- Error Responses:
+  - 403 Forbidden: Not the message author
+  - 400 Bad Request: content is empty
+- Example Request:
+  curl -X PATCH https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"content": "Corrected message"}'
+
+--------------------------------------------------------------------------------
+5. DELETE MESSAGE
+--------------------------------------------------------------------------------
+DELETE /api/v1/channels/<channel_id>/messages/<message_id>/
+- Description: Delete a message. Authors can delete their own messages.
+  Moderators, Admins, and Owners can delete any message in their community.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Message deleted." }
+- Error Responses:
+  - 403 Forbidden: Not the author and not a moderator+
+- Example Request:
+  curl -X DELETE https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/ \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+6. ADD REACTION
+--------------------------------------------------------------------------------
+POST /api/v1/channels/<channel_id>/messages/<message_id>/react/
+- Description: Add an emoji reaction to a message. Each user can add each emoji
+  once (duplicate emoji reactions return 400).
+- Auth: Bearer Token (required)
+- Request Body:
+  { "emoji": "👍" }
+- Success Response (201 Created):
+  { "success": true, "message": "Reaction added.", "data": { "emoji": "👍", "message_id": 1 } }
+- Error Responses:
+  - 400 Bad Request: Already reacted with this emoji
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/react/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"emoji": "👍"}'
+
+--------------------------------------------------------------------------------
+7. REMOVE REACTION
+--------------------------------------------------------------------------------
+DELETE /api/v1/channels/<channel_id>/messages/<message_id>/react/
+- Description: Remove your emoji reaction from a message.
+- Auth: Bearer Token (required)
+- Request Body:
+  { "emoji": "👍" }
+- Success Response (200 OK):
+  { "success": true, "message": "Reaction removed." }
+- Error Responses:
+  - 400 Bad Request: emoji not provided
+  - 404 Not Found: Reaction does not exist
+- Example Request:
+  curl -X DELETE https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/react/ \
+    -H "Authorization: Bearer <access_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"emoji": "👍"}'
+
+--------------------------------------------------------------------------------
+8. PIN / UNPIN MESSAGE
+--------------------------------------------------------------------------------
+POST /api/v1/channels/<channel_id>/messages/<message_id>/pin/
+- Description: Toggle pin state of a message. Only Moderators, Admins, and Owners
+  can pin messages. Calling again unpins.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Message pinned.", "data": { "id": 1, "is_pinned": true } }
+- Error Responses:
+  - 403 Forbidden: Not a moderator or above
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/pin/ \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+9. GET THREAD REPLIES
+--------------------------------------------------------------------------------
+GET /api/v1/channels/<channel_id>/messages/<message_id>/thread/
+- Description: List all thread replies for a top-level message. Replies are
+  ordered by created_at ascending.
+- Auth: Bearer Token (required)
+- Query Parameters:
+  - limit=<int>   Max replies to return (default 50, max 100)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Thread replies retrieved.",
+    "data": [ ...reply messages... ],
+    "meta": { "parent_id": 1, "count": 3 }
+  }
+- Example Request:
+  curl -X GET https://solely-together-cricket.ngrok-free.app/api/v1/channels/3/messages/1/thread/ \
+    -H "Authorization: Bearer <access_token>"
+
+--------------------------------------------------------------------------------
+10. UPLOAD ATTACHMENT
+--------------------------------------------------------------------------------
+POST /api/v1/messages/<message_id>/attachments/
+- Description: Upload one or more file attachments to a message.
+  Only the message author can add attachments.
+  Max 10 files per request. Max 25MB per file.
+  Supported: images, videos, PDFs, Word docs, Excel sheets, text files, zip.
+- Auth: Bearer Token (required)
+- Request Body: multipart/form-data
+  files: <file1>, <file2>, ...
+- Success Response (201 Created):
+  {
+    "success": true,
+    "message": "2 attachment(s) uploaded.",
+    "data": [
+      { "id": 1, "file_name": "photo.jpg", "file_size": 204800, "mime_type": "image/jpeg" }
+    ]
+  }
+- Error Responses:
+  - 400 Bad Request: No files, too many files, file too large, unsupported MIME
+  - 403 Forbidden: Not the message author
+- Example Request:
+  curl -X POST https://solely-together-cricket.ngrok-free.app/api/v1/messages/1/attachments/ \
+    -H "Authorization: Bearer <access_token>" \
+    -F "files=@photo.jpg"
+
+--------------------------------------------------------------------------------
+11. STUDENT NEWS MODULE (PHASE 6)
+--------------------------------------------------------------------------------
+
+GET /api/v1/news/
+- Description: List news items filtered by the user's scope/permissions (excludes drafts/blocked unless the user is the author or admin).
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "News list retrieved.", "data": [ ...news objects... ] }
+
+POST /api/v1/news/
+- Description: Create a news article. Students cannot create news.
+- Auth: Bearer Token (required)
+- Request Body:
+  {
+    "title": "Hackathon 2026",
+    "content": "<p>Join our hackathon!</p>",
+    "category": "hackathon",
+    "scope": "platform",
+    "status": "draft",
+    "tags": ["code", "fun"]
+  }
+- Success Response (201 Created):
+  { "success": true, "message": "News created.", "data": { "id": 1, ... } }
+
+GET /api/v1/news/<id>/
+- Description: Retrieve news details. Increments view counter by 1.
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/publish/
+- Description: Immediately publish a draft news article.
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/like/
+- Description: Toggle like/unlike on a news article.
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/bookmark/
+- Description: Toggle bookmark state on a news article.
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/share/
+- Description: Track/increment share count and retrieve a shareable client link.
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/report/
+- Description: Report a news article for moderation.
+- Auth: Bearer Token (required)
+- Request Body: { "reason": "Spam/inappropriate" }
+
+GET /api/v1/news/<id>/comments/
+- Description: List all top-level comments for a news article with replies nested.
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/comments/
+- Description: Post a comment or reply to an existing comment.
+- Auth: Bearer Token (required)
+- Request Body: { "content": "Hello", "parent": 123 }
+
+DELETE /api/v1/news/comments/<comment_id>/
+- Description: Delete a comment (Only author, news author, or admin/moderator).
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/attachments/
+- Description: Upload attachments to news (Max 10 files, Max 25MB each).
+- Auth: Bearer Token (required)
+
+GET /api/v1/news/latest/
+- Description: Retrieve news feed sorted by creation/publish time.
+- Auth: Bearer Token (required)
+
+GET /api/v1/news/trending/
+- Description: Retrieve trending news based on likes, comments, shares, views.
+- Auth: Bearer Token (required)
+
+GET /api/v1/news/recommended/
+- Description: Retrieve recommended news matching user's interests, college, and communities.
+- Auth: Bearer Token (required)
+
+GET /api/v1/news/college/
+- Description: Retrieve college specific news feed matching user profile's college.
+- Auth: Bearer Token (required)
+
+GET /api/v1/news/community/<community_id>/
+- Description: Retrieve community specific news feed.
+- Auth: Bearer Token (required)
+
+GET /api/v1/news/moderation/
+- Description: View reported news articles moderation queue (Platform admins/moderators only).
+- Auth: Bearer Token (required)
+
+POST /api/v1/news/<id>/moderate/
+- Description: Resolve reports (approve, block, delete) on a reported news article.
+- Auth: Bearer Token (required)
+- Request Body: { "action": "block" }
+
+GET /api/v1/tags/
+- Description: List all unique news tags.
+- Auth: Bearer Token (required)
+
+--------------------------------------------------------------------------------
+12. WEBSOCKET NEWS PUBLICATION NOTIFICATION
+--------------------------------------------------------------------------------
+
+WS /ws/news/
+- Description: Establish WebSocket connection to receive real-time notifications when a news article is published.
+- Broadcast Payload:
+  {
+    "event": "news_published",
+    "data": {
+      "id": 1,
+      "title": "Breaking News",
+      "category": "announcement",
+      "scope": "platform",
+      "created_at": "2026-07-30T12:00:00Z"
+    }
+  }
+
+--------------------------------------------------------------------------------
+13. EVENTS MODULE (PHASE 7)
+--------------------------------------------------------------------------------
+
+GET /api/v1/events/
+- Description: List events filtered by query params (scope, event_type, college, community, search).
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Event list retrieved.", "data": [ ...event objects... ] }
+
+POST /api/v1/events/
+- Description: Create an event. Only admins/moderators can create events.
+- Auth: Bearer Token (required)
+- Request Body:
+  {
+    "title": "Hackathon 2026",
+    "description": "Fun times",
+    "scope": "platform",
+    "event_type": "offline",
+    "location": "Auditorium",
+    "start_time": "2026-07-30T10:00:00Z",
+    "end_time": "2026-07-30T12:00:00Z",
+    "seats": 100
+  }
+- Success Response (201 Created):
+  { "success": true, "message": "Event created successfully.", "data": { "id": 1, ... } }
+
+GET /api/v1/events/<id>/
+- Description: Retrieve event details.
+- Auth: Bearer Token (required)
+
+PUT/PATCH /api/v1/events/<id>/
+- Description: Update event details.
+- Auth: Bearer Token (required)
+
+DELETE /api/v1/events/<id>/
+- Description: Delete an event.
+- Auth: Bearer Token (required)
+
+POST /api/v1/events/<id>/join/
+- Description: Join an event. Places user on waitlist if seats capacity limit is exceeded.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Joined event successfully.", "data": { "status": "joined", ... } }
+
+POST /api/v1/events/<id>/leave/
+- Description: Leave an event. Promotes the oldest waitlisted user to joined status automatically.
+- Auth: Bearer Token (required)
+
+POST /api/v1/events/<id>/check-in/
+- Description: Check-in attendance using the event's QR Code key.
+- Auth: Bearer Token (required)
+- Request Body: { "qr_code_key": "<uuid>" }
+
+POST /api/v1/events/<id>/remind/
+- Description: Configure a calendar reminder time.
+- Auth: Bearer Token (required)
+- Request Body: { "reminder_time": "2026-07-30T15:00:00Z" }
+
+GET /api/v1/events/<id>/ical/
+- Description: Export the event to standard iCalendar (.ics) format file attachment.
+- Auth: Bearer Token (required)
+- Response Content-Type: text/calendar
+
+GET /api/v1/events/<id>/comments/
+- Description: List all top-level event discussion comments with nested replies.
+- Auth: Bearer Token (required)
+
+POST /api/v1/events/<id>/comments/
+- Description: Create an event comment or reply.
+- Auth: Bearer Token (required)
+- Request Body: { "content": "Nice!", "parent": 123 }
+
+DELETE /api/v1/events/comments/<comment_id>/
+- Description: Delete an event comment (Only comment author, event author, or admin/moderator).
+- Auth: Bearer Token (required)
+
+POST /api/v1/events/<id>/gallery/
+- Description: Upload event gallery image attachments.
+- Auth: Bearer Token (required)
+
+POST /api/v1/events/<id>/speakers/
+- Description: Add a speaker profile to the event.
+- Auth: Bearer Token (required)
+
+POST /api/v1/events/<id>/sponsors/
+- Description: Add a sponsor to the event.
+- Auth: Bearer Token (required)
+
+
+--------------------------------------------------------------------------------
+14. NOTIFICATION CENTER MODULE (PHASE 8)
+--------------------------------------------------------------------------------
+
+GET /api/v1/notifications/
+- Description: List recipient's notifications.
+  Filters: is_read (true/false), notification_type, search (by title/content).
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Notifications retrieved.",
+    "data": [
+      {
+        "id": 1,
+        "recipient": 2,
+        "notification_type": "reply",
+        "title": "New comment",
+        "content": "Alice commented on your post.",
+        "is_read": false,
+        "data": { "news_id": 5 },
+        "created_at": "2026-07-30T13:00:00Z"
+      }
+    ]
+  }
+
+DELETE /api/v1/notifications/<id>/
+- Description: Delete a specific notification.
+- Auth: Bearer Token (required)
+
+GET /api/v1/notifications/unread-count/
+- Description: Get count of unread notifications.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Unread count retrieved.", "data": { "unread_count": 5 } }
+
+POST /api/v1/notifications/<id>/mark-read/
+- Description: Mark a specific notification as read.
+- Auth: Bearer Token (required)
+
+POST /api/v1/notifications/mark-all-read/
+- Description: Mark all of the recipient's notifications as read.
+- Auth: Bearer Token (required)
+
+POST /api/v1/notifications/batch-mark-read/
+- Description: Mark multiple notifications as read.
+- Auth: Bearer Token (required)
+- Request Body: { "ids": [1, 2, 3] }
+
+POST /api/v1/notifications/batch-delete/
+- Description: Delete multiple notifications.
+- Auth: Bearer Token (required)
+- Request Body: { "ids": [1, 2, 3] }
+
+POST /api/v1/push-devices/
+- Description: Register or update a push device token for FCM.
+- Auth: Bearer Token (required)
+- Request Body: { "registration_token": "<token>", "device_type": "android" }
+- Success Response (201 Created):
+  { "success": true, "message": "Push device registered successfully.", "data": { ... } }
+
+DELETE /api/v1/push-devices/<id>/
+- Description: Remove a registered push device token.
+- Auth: Bearer Token (required)
+
+GET /api/v1/notifications/preferences/
+- Description: Retrieve notification preferences (muted categories/entities).
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Notification preferences retrieved.",
+    "data": {
+      "muted_communities": [12],
+      "muted_channels": [],
+      "muted_events": [],
+      "muted_types": ["news"]
+    }
+  }
+
+PATCH /api/v1/notifications/preferences/
+- Description: Update notification preference fields (partial update).
+- Auth: Bearer Token (required)
+- Request Body:
+  {
+    "muted_communities": [12, 15],
+    "muted_types": ["news", "reaction"]
+  }
+
+WS /ws/notifications/?token=<jwt_access_token>
+- Description: Establish a live notification stream.
+- Handshake Auth: Decodes JWT from the query string to map the recipient user.
+- Broadcast Payload:
+  {
+    "event": "new_notification",
+    "data": {
+      "id": 1,
+      "notification_type": "reply",
+      "title": "New comment",
+      "content": "Alice commented on your post.",
+      "is_read": false,
+      "data": { "news_id": 5 },
+      "created_at": "2026-07-30T13:00:00Z"
+    }
+  }
+
+--------------------------------------------------------------------------------
+15. GLOBAL SEARCH MODULE (PHASE 9)
+--------------------------------------------------------------------------------
+
+GET /api/v1/search/query/
+- Description: Global search across users, communities, channels, messages, news, events, and tags.
+- Auth: Bearer Token (required)
+- Query Parameters:
+  - q: The search query string (required for logging history, e.g. "Testing").
+  - type: Filter by a specific model type. Options: all (default), user, community, channel, message, news, event, tag. If a specific type is requested, the endpoint returns standard DRF paginated results.
+  - sort: Sort order. Options: relevance (default), date.
+  - scope: Limit search scope. Options: all (default), platform, community, college.
+- Success Response (200 OK - Combined "all" format):
+  {
+    "success": true,
+    "message": "Search results retrieved.",
+    "data": {
+      "users": [ ... ],
+      "communities": [ ... ],
+      "channels": [ ... ],
+      "messages": [ ... ],
+      "news": [ ... ],
+      "events": [ ... ],
+      "tags": [ ... ]
+    }
+  }
+- Success Response (200 OK - Specific paginated type, e.g. type=news):
+  {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [ ...news objects... ]
+  }
+
+GET /api/v1/search/trending/
+- Description: Get the top 5 trending search queries in the last 7 days.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Trending search terms retrieved.",
+    "data": ["react", "django", "testing"]
+  }
+
+GET /api/v1/search/suggestions/
+- Description: Retrieve community and user search suggestions.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Search suggestions retrieved.",
+    "data": {
+      "popular_communities": [ ... ],
+      "recommended_communities": [ ... ],
+      "suggested_users": [ ... ]
+    }
+  }
+
+GET /api/v1/search/history/
+- Description: Retrieve past search history (paginated).
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  { "success": true, "message": "Search history retrieved.", "data": [ ...query objects... ] }
+
+DELETE /api/v1/search/history/
+- Description: Clear search history (clear_all=true) or delete a single search query record (by id).
+- Auth: Bearer Token (required)
+- Request Body: { "id": 123 } OR { "clear_all": true }
+
+GET /api/v1/search/recently-visited/
+- Description: Get the list of up to 10 recently visited news articles, events, and communities.
+- Auth: Bearer Token (required)
+- Success Response (200 OK):
+  {
+    "success": true,
+    "message": "Recently visited entities retrieved.",
+    "data": [
+      { "entity_type": "community", "entity_id": 5, "title": "Math Club", "visited_at": "2026-07-30T14:00:00Z" }
+    ]
+  }
+
+--------------------------------------------------------------------------------
+16. SUPABASE STORAGE INTEGRATION (PHASE 10)
+--------------------------------------------------------------------------------
+
+- Integrated with all user uploads:
+  - Profile Images (UserProfile.profile_photo)
+  - Community Icons & Banners (Community.icon, Community.banner)
+  - News Images & Banners (News.image, News.banner)
+  - Event Banners & Gallery (Event.banner, EventGalleryImage.image, EventSpeaker.photo, EventSponsor.logo)
+  - Message Attachments (MessageAttachment.file)
+
+- Validations & Size Limits:
+  - Images (JPEG, PNG, WEBP, GIF): Maximum size 5MB. Automatic quality-75 compression.
+  - Documents & Videos (PDF, Word, Excel, Zips, MP4, MOV, AVI, MKV): Maximum size 25MB.
+  - Blocked Formats: Unsupported formats (like .exe) are rejected with a 400 Bad Request (ValidationError).
+  - Simulates an automated virus check before upload.
+
+- Storage Quotas:
+  - Max storage size per user: 100MB cumulative uploads.
+  - Exceeding the quota returns a 400 Bad Request (ValidationError).
+
+- File Cleanup:
+  - Deleting database model instances automatically cleans up associated physical files from Supabase storage and recovers user storage quota.
+
+- Storage API Endpoints:
+
+  POST /api/v1/storage/upload/
+  - Description: Direct endpoint to upload files to Supabase Storage with all validations/compressions/quota checks applied.
+  - Auth: Bearer Token (required)
+  - Content-Type: multipart/form-data
+  - Request Body:
+    - file: The file binary.
+  - Success Response (200 OK):
+    {
+      "success": true,
+      "message": "File uploaded successfully.",
+      "data": {
+        "file_name": "filename.jpg",
+        "url": "https://supabase.../filename.jpg",
+        "size_bytes": 10240
+      }
+    }
+
+  POST /api/v1/storage/signed-url/
+  - Description: Request a temporary signed download URL for a file.
+  - Auth: Bearer Token (required)
+  - Request Body:
+    {
+      "file_name": "filename.jpg",
+      "expires_in": 3600
+    }
+  - Success Response (200 OK):
+    {
+      "success": true,
+      "message": "Signed URL generated successfully.",
+      "data": {
+        "signed_url": "https://..."
+      }
+    }
+
+  GET /api/v1/storage/quota/
+  - Description: Retrieve cumulative storage usage metrics for the authenticated user.
+  - Auth: Bearer Token (required)
+  - Success Response (200 OK):
+    {
+      "success": true,
+      "message": "User storage quota retrieved.",
+      "data": {
+        "bytes_used": 1234567,
+        "limit_bytes": 104857600
+      }
+    }
+
+--------------------------------------------------------------------------------
+17. WEBSOCKET REAL-TIME SERVICE (PHASE 11)
+--------------------------------------------------------------------------------
+
+All WebSockets are powered by Django Channels. Redis is used as the channel layer.
+
+- Authentication:
+  WebSockets authenticate via the `token` query parameter:
+  `ws://<host>/ws/channels/<channel_id>/?token=JWT_ACCESS_TOKEN_HERE`
+
+- Endpoints & Consumers:
+
+  1. Live Chat & Channel Presence:
+     URL: `ws://<host>/ws/channels/<channel_id>/`
+     Description: Connect to a specific community channel for live messaging, typing indicators, reactions, and online presence tracking.
+
+     - Client Actions:
+       - Send Heartbeat Ping:
+         Request: `{ "type": "ping" }`
+         Response: `{ "type": "pong" }`
+       - Send Typing Status:
+         Request: `{ "type": "typing", "is_typing": true }`
+         Response: (Broadcasted to other users) `{ "type": "typing", "user_id": 12, "username": "thiru", "is_typing": true }`
+
+     - Server Broadcasts (to group "channel_<channel_id>"):
+       - User Presence Updates:
+         `{ "type": "presence_update", "online_users": [{ "id": 1, "username": "thiru", "display_name": "Thiru" }] }`
+       - Live Message Created:
+         `{ "type": "message", "message": { ...message object... } }`
+       - Live Message Edited:
+         `{ "type": "message_edited", "message": { ...message object... } }`
+       - Live Message Deleted:
+         `{ "type": "message_deleted", "message_id": 456 }`
+       - Live Reactions Added/Removed:
+         `{ "type": "reaction", "message_id": 456, "reactions": [{ "emoji": "🔥", "count": 2 }] }`
+       - Live Pinned/Unpinned Broadcast:
+         `{ "type": "pinned_broadcast", "message_id": 456, "is_pinned": true }`
+
+     - Throttling Rule:
+       Clients are capped at a maximum of 5 messages/requests per second. Exceeding this triggers an error payload:
+       `{ "type": "error", "message": "Rate limit exceeded. Maximum 5 messages per second." }`
+
+  2. Live News Updates:
+     URL: `ws://<host>/ws/news/`
+     Description: Connect to the public news feed to listen for news publication events.
+     - Server Broadcasts:
+       - News Published:
+         `{ "event": "news_published", "data": { ...news object... } }`
+
+  3. Live Notifications Updates:
+     URL: `ws://<host>/ws/notifications/?token=JWT_ACCESS_TOKEN_HERE`
+     Description: Connect to user-specific channel to receive live notifications.
+     - Server Broadcasts:
+       - New Notification Alert:
+         `{ "event": "new_notification", "data": { ...notification object... } }`
+
+--------------------------------------------------------------------------------
+18. MODERATION SERVICES (PHASE 12)
+--------------------------------------------------------------------------------
+
+- Endpoints & Schemas:
+
+  1. Submit Report:
+     - URL: `POST /api/v1/moderation/reports/`
+     - Auth: Bearer Token (required)
+     - Request Body:
+       {
+         "report_type": "user|community|message|news|event",
+         "target_id": "target_identifier_here",
+         "reason": "Harassment / Spam / Abuse",
+         "details": "Details explaining the report."
+       }
+     - Success Response (201 Created):
+       {
+         "success": true,
+         "message": "Report submitted successfully.",
+         "data": {
+           "id": 1,
+           "reporter": { "id": 10, "username": "thiru", ... },
+           "report_type": "user",
+           "target_id": "12",
+           "reason": "Harassment",
+           "details": "Details explaining the report.",
+           "status": "pending",
+           "moderator_notes": null,
+           "created_at": "...",
+           "updated_at": "..."
+         }
+       }
+
+  2. Get Reports:
+     - URL: `GET /api/v1/moderation/reports/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Query Parameters:
+       - `status`: Filter by status (`pending`, `reviewed`, `actioned`, `dismissed`)
+       - `report_type`: Filter by type (`user`, `community`, `message`, `news`, `event`)
+
+  3. Resolve/Action Report:
+     - URL: `PATCH /api/v1/moderation/reports/<id>/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Request Body:
+       {
+         "status": "reviewed|actioned|dismissed",
+         "moderator_notes": "Moderator notes explaining resolution details"
+       }
+
+  4. Mute User:
+     - URL: `POST /api/v1/moderation/mute/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin/Moderator)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101,  // Optional. If null/omitted, muting is platform-wide
+         "duration_minutes": 60, // Optional. If null/omitted, mute is permanent
+         "reason": "Spamming channel messages"
+       }
+
+  5. Unmute User:
+     - URL: `POST /api/v1/moderation/unmute/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin/Moderator)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101  // Optional
+       }
+
+  6. Kick User:
+     - URL: `POST /api/v1/moderation/kick/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin/Moderator)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101,
+         "reason": "Violation of rules"
+       }
+
+  7. Ban User:
+     - URL: `POST /api/v1/moderation/ban/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101,
+         "ban_type": "temporary|permanent",
+         "duration_days": 7, // Optional (only applies for temporary bans)
+         "reason": "Harassment"
+       }
+
+  8. Unban User:
+     - URL: `POST /api/v1/moderation/unban/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101
+       }
+
+  9. Blocked Words CRUD:
+     - URL: `POST /api/v1/moderation/blocked-words/`
+       - Auth: Platform Admin only
+       - Request: `{ "word": "badword" }`
+     - URL: `GET /api/v1/moderation/blocked-words/`
+     - URL: `DELETE /api/v1/moderation/blocked-words/<id>/`
+
+  10. Dashboard Stats:
+     - URL: `GET /api/v1/moderation/dashboard/stats/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Success Response (200 OK):
+       {
+         "success": true,
+         "message": "Stats retrieved successfully.",
+         "data": {
+           "total_reports": 15,
+           "pending_reports": 3,
+           "active_bans": 5,
+           "active_mutes": 2,
+      "message": "Signed URL generated successfully.",
+      "data": {
+        "signed_url": "https://..."
+      }
+    }
+
+  GET /api/v1/storage/quota/
+  - Description: Retrieve cumulative storage usage metrics for the authenticated user.
+  - Auth: Bearer Token (required)
+  - Success Response (200 OK):
+    {
+      "success": true,
+      "message": "User storage quota retrieved.",
+      "data": {
+        "bytes_used": 1234567,
+        "limit_bytes": 104857600
+      }
+    }
+
+--------------------------------------------------------------------------------
+17. WEBSOCKET REAL-TIME SERVICE (PHASE 11)
+--------------------------------------------------------------------------------
+
+All WebSockets are powered by Django Channels. Redis is used as the channel layer.
+
+- Authentication:
+  WebSockets authenticate via the `token` query parameter:
+  `ws://<host>/ws/channels/<channel_id>/?token=JWT_ACCESS_TOKEN_HERE`
+
+- Endpoints & Consumers:
+
+  1. Live Chat & Channel Presence:
+     URL: `ws://<host>/ws/channels/<channel_id>/`
+     Description: Connect to a specific community channel for live messaging, typing indicators, reactions, and online presence tracking.
+
+     - Client Actions:
+       - Send Heartbeat Ping:
+         Request: `{ "type": "ping" }`
+         Response: `{ "type": "pong" }`
+       - Send Typing Status:
+         Request: `{ "type": "typing", "is_typing": true }`
+         Response: (Broadcasted to other users) `{ "type": "typing", "user_id": 12, "username": "thiru", "is_typing": true }`
+
+     - Server Broadcasts (to group "channel_<channel_id>"):
+       - User Presence Updates:
+         `{ "type": "presence_update", "online_users": [{ "id": 1, "username": "thiru", "display_name": "Thiru" }] }`
+       - Live Message Created:
+         `{ "type": "message", "message": { ...message object... } }`
+       - Live Message Edited:
+         `{ "type": "message_edited", "message": { ...message object... } }`
+       - Live Message Deleted:
+         `{ "type": "message_deleted", "message_id": 456 }`
+       - Live Reactions Added/Removed:
+         `{ "type": "reaction", "message_id": 456, "reactions": [{ "emoji": "🔥", "count": 2 }] }`
+       - Live Pinned/Unpinned Broadcast:
+         `{ "type": "pinned_broadcast", "message_id": 456, "is_pinned": true }`
+
+     - Throttling Rule:
+       Clients are capped at a maximum of 5 messages/requests per second. Exceeding this triggers an error payload:
+       `{ "type": "error", "message": "Rate limit exceeded. Maximum 5 messages per second." }`
+
+  2. Live News Updates:
+     URL: `ws://<host>/ws/news/`
+     Description: Connect to the public news feed to listen for news publication events.
+     - Server Broadcasts:
+       - News Published:
+         `{ "event": "news_published", "data": { ...news object... } }`
+
+  3. Live Notifications Updates:
+     URL: `ws://<host>/ws/notifications/?token=JWT_ACCESS_TOKEN_HERE`
+     Description: Connect to user-specific channel to receive live notifications.
+     - Server Broadcasts:
+       - New Notification Alert:
+         `{ "event": "new_notification", "data": { ...notification object... } }`
+
+--------------------------------------------------------------------------------
+18. MODERATION SERVICES (PHASE 12)
+--------------------------------------------------------------------------------
+
+- Endpoints & Schemas:
+
+  1. Submit Report:
+     - URL: `POST /api/v1/moderation/reports/`
+     - Auth: Bearer Token (required)
+     - Request Body:
+       {
+         "report_type": "user|community|message|news|event",
+         "target_id": "target_identifier_here",
+         "reason": "Harassment / Spam / Abuse",
+         "details": "Details explaining the report."
+       }
+     - Success Response (201 Created):
+       {
+         "success": true,
+         "message": "Report submitted successfully.",
+         "data": {
+           "id": 1,
+           "reporter": { "id": 10, "username": "thiru", ... },
+           "report_type": "user",
+           "target_id": "12",
+           "reason": "Harassment",
+           "details": "Details explaining the report.",
+           "status": "pending",
+           "moderator_notes": null,
+           "created_at": "...",
+           "updated_at": "..."
+         }
+       }
+
+  2. Get Reports:
+     - URL: `GET /api/v1/moderation/reports/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Query Parameters:
+       - `status`: Filter by status (`pending`, `reviewed`, `actioned`, `dismissed`)
+       - `report_type`: Filter by type (`user`, `community`, `message`, `news`, `event`)
+
+  3. Resolve/Action Report:
+     - URL: `PATCH /api/v1/moderation/reports/<id>/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Request Body:
+       {
+         "status": "reviewed|actioned|dismissed",
+         "moderator_notes": "Moderator notes explaining resolution details"
+       }
+
+  4. Mute User:
+     - URL: `POST /api/v1/moderation/mute/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin/Moderator)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101,  // Optional. If null/omitted, muting is platform-wide
+         "duration_minutes": 60, // Optional. If null/omitted, mute is permanent
+         "reason": "Spamming channel messages"
+       }
+
+  5. Unmute User:
+     - URL: `POST /api/v1/moderation/unmute/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin/Moderator)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101  // Optional
+       }
+
+  6. Kick User:
+     - URL: `POST /api/v1/moderation/kick/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin/Moderator)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101,
+         "reason": "Violation of rules"
+       }
+
+  7. Ban User:
+     - URL: `POST /api/v1/moderation/ban/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101,
+         "ban_type": "temporary|permanent",
+         "duration_days": 7, // Optional (only applies for temporary bans)
+         "reason": "Harassment"
+       }
+
+  8. Unban User:
+     - URL: `POST /api/v1/moderation/unban/`
+     - Auth: Bearer Token (required, Platform Admin/Moderator or Community Owner/Admin)
+     - Request Body:
+       {
+         "user_id": 12,
+         "community_id": 101
+       }
+
+  9. Blocked Words CRUD:
+     - URL: `POST /api/v1/moderation/blocked-words/`
+       - Auth: Platform Admin only
+       - Request: `{ "word": "badword" }`
+     - URL: `GET /api/v1/moderation/blocked-words/`
+     - URL: `DELETE /api/v1/moderation/blocked-words/<id>/`
+
+  10. Dashboard Stats:
+     - URL: `GET /api/v1/moderation/dashboard/stats/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Success Response (200 OK):
+       {
+         "success": true,
+         "message": "Stats retrieved successfully.",
+         "data": {
+           "total_reports": 15,
+           "pending_reports": 3,
+           "active_bans": 5,
+           "active_mutes": 2,
+           "message_audit_logs": 250
+         }
+       }
+
+  11. Message Audit Logs:
+     - URL: `GET /api/v1/moderation/audit-logs/`
+     - Auth: Bearer Token (required, Platform Admin or Moderator role)
+     - Query Parameters:
+       - `action`: Filter by action (`created`, `edited`, `deleted`)
+       - `author_id`: Filter by author ID
+
+--------------------------------------------------------------------------------
+19. PLATFORM DASHBOARD (PHASE 13)
+--------------------------------------------------------------------------------
+
+All endpoints are under `/api/v1/dashboard/` and require a Bearer Token.
+Admin-only endpoints return 403 Forbidden for Moderator or lower roles.
+
+  1. Overview Statistics
+     - URL: `GET /api/v1/dashboard/stats/overview/`
+     - Auth: Bearer Token (Admin or Moderator)
+     - Success Response (200 OK):
+       {
+         "success": true,
+         "message": "Overview stats retrieved.",
+         "data": {
+           "users": 1200,
+           "communities": 45,
+           "channels": 210,
+           "messages": 50000,
+           "news": 340,
+           "events": 90,
+           "notifications": 15000,
+           "pending_reports": 12,
+           "active_bans": 5,
+           "active_mutes": 3
+         }
+       }
+
+  2. User Statistics
+     - URL: `GET /api/v1/dashboard/stats/users/`
+     - Auth: Bearer Token (Admin only)
+     - Query Parameters:
+       - `days`: Period in days (default: 30)
+     - Response includes: total_users, new_users_in_period, daily_growth chart,
+       role_breakdown (student/moderator/admin counts), top_active_users.
+
+  3. Content Statistics
+     - URL: `GET /api/v1/dashboard/stats/content/`
+     - Auth: Bearer Token (Admin or Moderator)
+     - Query Parameters:
+       - `days`: Period in days (default: 30)
+     - Response includes: totals and period counts for messages, news, events,
+       communities, channels, notifications.
+
+  4. Storage Analytics
+     - URL: `GET /api/v1/dashboard/stats/storage/`
+     - Auth: Bearer Token (Admin only)
+     - Response includes: total_bytes_used, total_mb_used, top_uploaders list.
+
+  5. Moderation Queue
+     - URL: `GET /api/v1/dashboard/moderation/queue/`
+     - Auth: Bearer Token (Admin or Moderator)
+     - Query Parameters:
+       - `report_type`: Filter by type (user|community|message|news|event)
+       - `page_size`: Items per page (default: 20, max: 100)
+       - `offset`: Pagination offset
+     - Returns pending reports with reporter info, target, and reason.
+
+  6. System Health
+     - URL: `GET /api/v1/dashboard/health/`
+     - Auth: Bearer Token (Admin only)
+     - Success Response (200 OK):
+       {
+         "success": true,
+         "message": "System health retrieved.",
+         "data": {
+           "database": { "status": "ok" },
+           "redis": { "status": "ok" },
+           "overall": "healthy"
+         }
+       }
+
+  7. API Usage Analytics
+     - URL: `GET /api/v1/dashboard/api-usage/`
+     - Auth: Bearer Token (Admin only)
+     - Query Parameters:
+       - `hours`: Lookback period in hours (default: 24)
+     - Response includes: period_hours, total_requests, top_endpoints list with
+       method, path, status_code, count, avg_duration_ms.
+
+  8. Audit Logs
+     - URL: `GET /api/v1/dashboard/audit-logs/`
+     - Auth: Bearer Token (Admin or Moderator)
+     - Query Parameters:
+       - `level`: Filter by log level (DEBUG|INFO|WARNING|ERROR)
+       - `path`: Filter by request path (partial match)
+       - `hours`: Only show logs from the last N hours
+       - `page_size`: Items per page (default: 50, max: 200)
+       - `offset`: Pagination offset
+
+  9. Announcements List & Create
+     - URL: `GET /api/v1/dashboard/announcements/`
+     - Auth: Bearer Token (Admin or Moderator for GET, Admin only for POST)
+     - Query Parameters:
+       - `active_only`: true/false — filter to currently active announcements
+     - POST Request Body:
+       {
+         "title": "Maintenance Window",
+         "body": "Platform offline 2-4 AM.",
+         "level": "warning",
+         "expires_at": "2026-08-01T04:00:00Z"
+       }
+
+  10. Announcement Detail
+      - URL: `GET/PATCH/DELETE /api/v1/dashboard/announcements/<id>/`
+      - Auth: Bearer Token (Admin only for PATCH/DELETE)
+      - PATCH body: any subset of title, body, level, is_active, expires_at.
+
+  11. Role Management
+      - URL: `GET /api/v1/dashboard/roles/`
+      - Auth: Bearer Token (Admin only)
+      - Query Parameters:
+        - `role`: Filter by role (student|moderator|admin)
+        - `search`: Search by username or email
+        - `page_size`, `offset`: Pagination
+      - POST (Promote/Demote):
+        - URL: `POST /api/v1/dashboard/roles/`
+        - Request Body: { "user_id": 12, "role": "moderator" }
+        - Success: Returns { "id", "username", "new_role" }
+
+  12. Platform Settings
+      - URL: `GET /api/v1/dashboard/settings/`
+      - Auth: Bearer Token (Admin only)
+      - Returns all key-value platform settings.
+      - PATCH (Create/Update a setting):
+        - URL: `PATCH /api/v1/dashboard/settings/`
+        - Request Body:
+          {
+            "key": "max_community_members",
+            "value": 500,
+            "description": "Maximum members per community"
+          }
+
+--------------------------------------------------------------------------------
+20. PUBLIC APIs (PHASE 14)
+--------------------------------------------------------------------------------
+
+All endpoints under `/api/v1/public/` require NO authentication.
+Responses are cached (Redis). Rate limits enforced per client IP.
+
+Rate Limits:
+  - Overview/trending/featured endpoints: 60 requests/minute
+  - Per-resource endpoints: 30 requests/minute
+  - Exceeded limit returns: 429 Too Many Requests
+
+  1. Platform Statistics
+     - URL: `GET /api/v1/public/stats/`
+     - Auth: None
+     - Cache TTL: 5 minutes
+     - Success Response (200 OK):
+       {
+         "success": true,
+         "message": "Platform statistics retrieved.",
+         "data": {
+           "users": 1200,
+           "communities": 45,
+           "channels": 210,
+           "news_articles": 340,
+           "events": 90
+         }
+       }
+
+  2. Trending Communities
+     - URL: `GET /api/v1/public/trending/communities/`
+     - Auth: None
+     - Cache TTL: 5 minutes
+     - Returns top 10 public communities ordered by member count.
+     - Response fields per community: id, name, slug, description,
+       icon, banner, member_count.
+
+  3. Featured News
+     - URL: `GET /api/v1/public/featured/news/`
+     - Auth: None
+     - Cache TTL: 5 minutes
+     - Returns latest 10 published news articles.
+     - Response fields: id, title, category, image, author, community,
+       published_at, likes_count.
+
+  4. Upcoming Events
+     - URL: `GET /api/v1/public/upcoming/events/`
+     - Auth: None
+     - Cache TTL: 5 minutes
+     - Returns next 10 upcoming events ordered by start_datetime.
+     - Response fields: id, title, description, start_datetime, end_datetime,
+       location, is_virtual, community, organizer, banner.
+
+  5. Community Statistics
+     - URL: `GET /api/v1/public/communities/<slug>/stats/`
+     - Auth: None
+     - Cache TTL: 2 minutes
+     - Returns stats for a single public community.
+     - Response fields: id, name, slug, description, member_count,
+       channel_count, news_count, event_count, upcoming_events, created_at.
+     - Returns 404 for private communities.
+
+  6. Public User Profile
+     - URL: `GET /api/v1/public/profiles/<username>/`
+     - Auth: None
+     - Cache TTL: 2 minutes
+     - Returns the public profile of a user.
+     - Response fields: id, username, display_name, bio, college, branch,
+       year, skills, interests, github, linkedin, portfolio, location,
+       is_verified_author, profile_photo, joined.
+     - Returns 404 if user not found.
+
+  7. SEO Metadata — Community
+     - URL: `GET /api/v1/public/seo/community/<slug>/`
+     - Auth: None
+     - Cache TTL: 10 minutes
+     - Returns: title, description, canonical_url, robots, keywords.
+
+  8. SEO Metadata — News Article
+     - URL: `GET /api/v1/public/seo/news/<news_id>/`
+     - Auth: None
+     - Cache TTL: 10 minutes
+     - Returns: title, description, canonical_url, robots, author, published_time.
+
+  9. SEO Metadata — Event
+     - URL: `GET /api/v1/public/seo/event/<id>/`
+     - Auth: None
+     - Cache TTL: 10 minutes
+     - Returns: title, description, canonical_url, robots, start_date.
+
+  10. Open Graph Data — Community
+      - URL: `GET /api/v1/public/og/community/<slug>/`
+      - Auth: None
+      - Cache TTL: 10 minutes
+      - Returns OG tags: og:type, og:title, og:description, og:image,
+        og:url, og:site_name.
+
+  11. Open Graph Data — News Article
+      - URL: `GET /api/v1/public/og/news/<news_id>/`
+      - Auth: None
+      - Cache TTL: 10 minutes
+      - Returns OG tags: og:type, og:title, og:description, og:image,
+        og:url, og:site_name, article:author, article:published_time.
+
+--------------------------------------------------------------------------------
+21. PRODUCTION READINESS (PHASE 15)
+--------------------------------------------------------------------------------
+
+Phase 15 does not define new REST API endpoints but adds infrastructure:
+
+  Infrastructure:
+  - Dockerfile (Python 3.12-slim, multi-stage, non-root user)
+  - docker-compose.yml (services: db, redis, web, celery, celerybeat, nginx)
+  - nginx/nginx.conf (HTTPS, WebSocket proxy, rate limiting, security headers)
+  - entrypoint.sh (waits for DB, runs migrations, collects static files)
+
+  Background Jobs (Celery + Celery Beat):
+  - `cleanup_expired_bans` — runs daily, removes expired community bans.
+  - `cleanup_expired_mutes` — runs hourly, removes expired user mutes.
+  - `prune_expired_announcements` — runs hourly, deactivates expired announcements.
+  - `cleanup_old_logs` — runs weekly, deletes LogEntry older than 90 days.
+  - `generate_weekly_stats_snapshot` — runs weekly, saves platform stats snapshot.
+  - `cleanup_orphan_search_history` — runs weekly, removes old search history.
+  - `send_notification_email` — on-demand, sends transactional emails.
+  - `send_bulk_announcement_email` — on-demand, sends announcement to bulk users.
+
+  Security Headers (production.py):
+  - SECURE_HSTS_SECONDS: 31536000 (1 year)
+  - SECURE_HSTS_INCLUDE_SUBDOMAINS: true
+  - SECURE_HSTS_PRELOAD: true
+  - SECURE_SSL_REDIRECT: true
+  - X_FRAME_OPTIONS: DENY
+  - SECURE_BROWSER_XSS_FILTER: true
+  - SECURE_REFERRER_POLICY: strict-origin-when-cross-origin
+  - SESSION_COOKIE_SECURE: true
+  - CSRF_COOKIE_SECURE: true
+
+  CI/CD:
+  - .github/workflows/ci.yml — runs on every PR: tests + flake8 lint
+  - .github/workflows/deploy.yml — runs on main: builds Docker image,
+    pushes to registry, deploys via SSH.
+
+  Monitoring:
+  - Sentry SDK (django + celery + redis integrations)
+  - Rotating file logs at /app/logs/django.log (10 MB, 5 backups)
+  - Health endpoint: GET /health/ and GET /api/v1/dashboard/health/
+
+  Environment Variables (see .env.example for full list):
+  - CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+  - EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
+  - SENTRY_DSN, SENTRY_TRACES_SAMPLE_RATE
+  - DJANGO_SECURE_SSL_REDIRECT, DJANGO_SECURE_HSTS_SECONDS
+
+  For full deployment instructions, see DEPLOYMENT.md.
