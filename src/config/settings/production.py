@@ -8,8 +8,12 @@ DEBUG = False
 DJANGO_ENVIRONMENT = "production"
 ALLOWED_HOSTS = require_csv_env("DJANGO_ALLOWED_HOSTS")
 DATABASES = build_database_settings(allow_sqlite_fallback=False)
-CORS_ALLOWED_ORIGINS = require_csv_env("CORS_ALLOWED_ORIGINS")
-CSRF_TRUSTED_ORIGINS = require_csv_env("CSRF_TRUSTED_ORIGINS")
+
+# CORS / CSRF — fall back to HTTPS versions of ALLOWED_HOSTS if not explicitly set
+_allowed_hosts = ALLOWED_HOSTS
+_default_origins = [f"https://{h}" for h in _allowed_hosts if h not in ("*", "localhost", "127.0.0.1")]
+CORS_ALLOWED_ORIGINS = parse_csv_env("CORS_ALLOWED_ORIGINS", ",".join(_default_origins) or "https://localhost")
+CSRF_TRUSTED_ORIGINS = parse_csv_env("CSRF_TRUSTED_ORIGINS", ",".join(_default_origins) or "https://localhost")
 
 STORAGES = {
     **STORAGES,
