@@ -227,34 +227,38 @@ REST_FRAMEWORK = {
     },
 }
 
-# Cache configuration (Redis in production, local memory in development/test)
-REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": REDIS_URL,
-        "KEY_PREFIX": "sv",
-        "OPTIONS": {
-            "socket_connect_timeout": 5,
-            "socket_timeout": 5,
-        },
-    }
-}
-
-# Channels Configuration
-if "test" in sys.argv:
-    CHANNEL_LAYERS = {
+# Cache configuration (Redis in production if configured, local memory fallback)
+REDIS_URL = os.getenv("REDIS_URL", "")
+if REDIS_URL:
+    CACHES = {
         "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        },
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "sv",
+            "OPTIONS": {
+                "socket_connect_timeout": 5,
+                "socket_timeout": 5,
+            },
+        }
     }
-else:
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")],
+                "hosts": [REDIS_URL],
             },
+        },
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "sv-locmem-fallback",
+        }
+    }
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
     }
 
