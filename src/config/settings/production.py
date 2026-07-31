@@ -34,7 +34,8 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = parse_bool_env("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", True)
 SECURE_HSTS_PRELOAD = parse_bool_env("DJANGO_SECURE_HSTS_PRELOAD", True)
-SECURE_SSL_REDIRECT = parse_bool_env("DJANGO_SECURE_SSL_REDIRECT", True)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = parse_bool_env("DJANGO_SECURE_SSL_REDIRECT", False)
 
 # ---------------------------------------------------------------------------
 # Production Cache — Redis (overrides base.py CACHES)
