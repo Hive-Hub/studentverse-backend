@@ -12,7 +12,8 @@ services:
     buildCommand: "./build.sh"
 
     # Daphne ASGI server — handles both HTTP and WebSocket
-    startCommand: "cd src && daphne -b 0.0.0.0 -p $PORT config.asgi:application"
+    # PYTHONPATH includes src/ so Django can find config.asgi
+    startCommand: "PYTHONPATH=src daphne -b 0.0.0.0 -p $PORT config.asgi:application"
 
     autoDeploy: true
 
@@ -52,7 +53,7 @@ services:
     branch: main
 
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "cd src && celery -A config worker -l info --concurrency 2"
+    startCommand: "PYTHONPATH=src celery -A config worker -l info --concurrency 2"
 
     autoDeploy: true
 
@@ -76,7 +77,7 @@ services:
     branch: main
 
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "cd src && celery -A config beat -l info"
+    startCommand: "PYTHONPATH=src celery -A config beat -l info"
 
     autoDeploy: true
 
