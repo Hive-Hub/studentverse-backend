@@ -40,8 +40,8 @@ SECURE_SSL_REDIRECT = parse_bool_env("DJANGO_SECURE_SSL_REDIRECT", False)
 # ---------------------------------------------------------------------------
 # Production Cache — Redis (overrides base.py CACHES)
 # ---------------------------------------------------------------------------
-redis_url = os.getenv("REDIS_URL", "")
-if redis_url:
+redis_url = os.getenv("REDIS_URL", "").strip().strip('"').strip("'")
+if redis_url.startswith(("redis://", "rediss://", "unix://")):
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
@@ -54,12 +54,25 @@ if redis_url:
             },
         }
     }
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [redis_url],
+            },
+        },
+    }
 else:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "sv-prod-fallback",
         }
+    }
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
     }
 
 # ---------------------------------------------------------------------------

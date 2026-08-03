@@ -228,8 +228,8 @@ REST_FRAMEWORK = {
 }
 
 # Cache configuration (Redis in production if configured, local memory fallback)
-REDIS_URL = os.getenv("REDIS_URL", "")
-if REDIS_URL:
+REDIS_URL = os.getenv("REDIS_URL", "").strip().strip('"').strip("'")
+if REDIS_URL.startswith(("redis://", "rediss://", "unix://")):
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
