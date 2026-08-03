@@ -1,7 +1,9 @@
 StudentVerse Backend API Documentation
 
 Base URL:
-- Development: https://solely-together-cricket.ngrok-free.app
+- Production: https://studentverse-backend.onrender.com
+- API Version Prefix: /api/v1
+- WebSockets Base URL: wss://studentverse-backend.onrender.com
 
 Firebase Test Credentials:
 - Project ID: nothingtobedone-b1c91
